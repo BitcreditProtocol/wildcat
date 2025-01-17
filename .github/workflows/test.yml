@@ -1,0 +1,65 @@
+name: Test coverage
+
+on:
+  push:
+    branches: [ "*" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain:
+          - stable
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          components: llvm-tools-preview
+
+      - name: Install Protoc
+        run: sudo apt-get install -y protobuf-compiler
+
+      - name: Activate cache
+        uses: Swatinem/rust-cache@v2.7.5
+
+      - name: Install grcov
+        uses: taiki-e/install-action@v2
+        with:
+          tool: grcov
+
+      - name: Build crate
+        run: cargo build --verbose --all-targets
+        env:
+          RUSTFLAGS: "-Cinstrument-coverage"
+
+      - name: Test crate
+        run: cargo test --verbose
+        env:
+          LLVM_PROFILE_FILE: "target/coverage/prof/%p-%m.profraw"
+          RUSTFLAGS: "-Cinstrument-coverage"
+
+      - name: Create coverage report
+        run: |
+          grcov \
+            --source-dir . \
+            --binary-path target/debug \
+            --branch \
+            --excl-start 'mod tests \{' \
+            --ignore 'tests/*' \
+            -t lcov \
+            -o lcov.info \
+            target/coverage/prof
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          files: lcov.info
+          fail_ci_if_error: false

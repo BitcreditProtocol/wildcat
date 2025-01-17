@@ -126,7 +126,13 @@ impl<Quotes: QuoteRepository> Service<Quotes> {
             return Err(Error::QuoteAlreadyResolved(id));
         };
 
-        self.quotes.store(Quote::Accepted(request, Details { discounted: discount, ttl }));
+        self.quotes.store(Quote::Accepted(
+            request,
+            Details {
+                discounted: discount,
+                ttl,
+            },
+        ));
 
         Ok(())
     }

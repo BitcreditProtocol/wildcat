@@ -13,6 +13,8 @@ mod web;
 // ----- local imports
 
 pub type Result<T> = std::result::Result<T, Error>;
+
+#[allow(dead_code)]
 #[derive(Debug, Error)]
 pub enum Error {
     #[error("Quote expired: {0}")]

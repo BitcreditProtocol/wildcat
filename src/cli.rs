@@ -6,7 +6,7 @@ use futures_util::{stream::StreamExt, TryFutureExt};
 // ----- local modules
 mod credit;
 // ----- local imports
-use credit::{admin::ListQuotesReply, admin::LookUpQuoteReply, mint};
+use credit::{admin::ListQuotesReply, admin::LookUpQuoteReply};
 
 const MAIN_MENU: &str = "----- press (r) to refresh ----- (q) to quit";
 
