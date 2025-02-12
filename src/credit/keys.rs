@@ -1,6 +1,7 @@
 // ----- standard library imports
 // ----- extra library imports
 use anyhow::{Error as AnyError, Result as AnyResult};
+use async_trait::async_trait;
 use bitcoin::bip32 as btc32;
 use bitcoin::hashes::sha256::Hash as Sha256;
 use bitcoin::hashes::Hash;
@@ -102,9 +103,10 @@ fn generate_maturity_keyset_path(maturity_date: TStamp) -> btc32::DerivationPath
 
 // ---------- required traits
 #[cfg_attr(test, mockall::automock)]
+#[async_trait]
 pub trait QuoteBasedRepository: Send + Sync {
-    fn load(&self, kid: &keys::KeysetID, qid: Uuid) -> AnyResult<Option<keys::KeysetEntry>>;
-    fn store(
+    async fn load(&self, kid: &keys::KeysetID, qid: Uuid) -> AnyResult<Option<keys::KeysetEntry>>;
+    async fn store(
         &self,
         qid: Uuid,
         keyset: cdk02::MintKeySet,
@@ -137,12 +139,13 @@ impl<QuoteKeys, MaturityKeys> Factory<QuoteKeys, MaturityKeys> {
     }
 }
 
+#[async_trait]
 impl<QuoteKeys, MaturityKeys> KeyFactory for Factory<QuoteKeys, MaturityKeys>
 where
     QuoteKeys: QuoteBasedRepository,
     MaturityKeys: keys::Repository,
 {
-    fn generate(
+    async fn generate(
         &self,
         keysetid: KeysetID,
         quote: uuid::Uuid,
@@ -174,7 +177,7 @@ where
             keys,
             unit: self.unit.clone(),
         };
-        self.quote_keys.store(quote, set.clone(), info)?;
+        self.quote_keys.store(quote, set.clone(), info).await?;
 
         let kid = generate_keyset_id_from_maturity_date(bill_maturity_date, 0);
         if self.maturing_keys.info(&kid)?.is_some() {
@@ -312,8 +315,8 @@ mod tests {
     use mockall::predicate::*;
     use std::str::FromStr;
 
-    #[test]
-    fn test_keys_factory_generate() {
+    #[tokio::test]
+    async fn test_keys_factory_generate() {
         let seed = bip39::Mnemonic::from_str("abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about").unwrap().to_seed("");
 
         let keyid = KeysetID::from(cdk02::Id::from_bytes(&[0u8; 8]).unwrap());
@@ -334,7 +337,7 @@ mod tests {
 
         let factory = Factory::new(&seed, quotekeys_repo, maturitykeys_repo);
 
-        let keyset = factory.generate(keyid, quote, maturity).unwrap();
+        let keyset = factory.generate(keyid, quote, maturity).await.unwrap();
         // m/129372'/129534'/0'/927402239'/0'
         let key = &keyset.keys[&cdk::Amount::from(1_u64)];
         assert_eq!(

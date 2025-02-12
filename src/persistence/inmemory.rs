@@ -87,8 +87,9 @@ pub struct KeysetIDQuoteIDMap {
     keys: Arc<RwLock<HashMap<QuoteKeysIndex, KeysetEntry>>>,
 }
 
+#[async_trait]
 impl creditkeys::QuoteBasedRepository for KeysetIDQuoteIDMap {
-    fn store(
+    async fn store(
         &self,
         qid: Uuid,
         keyset: cdk02::MintKeySet,
@@ -101,7 +102,7 @@ impl creditkeys::QuoteBasedRepository for KeysetIDQuoteIDMap {
         Ok(())
     }
 
-    fn load(&self, kid: &keys::KeysetID, qid: Uuid) -> AnyResult<Option<keys::KeysetEntry>> {
+    async fn load(&self, kid: &keys::KeysetID, qid: Uuid) -> AnyResult<Option<keys::KeysetEntry>> {
         let mapkey = (kid.clone(), qid);
         Ok(self.keys.read().unwrap().get(&mapkey).cloned())
     }

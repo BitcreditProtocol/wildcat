@@ -115,7 +115,7 @@ pub trait Repository: Send + Sync {
 
 #[async_trait]
 pub trait KeyFactory: Send + Sync {
-    fn generate(
+    async fn generate(
         &self,
         kid: KeysetID,
         qid: Uuid,
@@ -241,7 +241,7 @@ where
 
         // TODO! maturity date should come from the eBill
         let maturity_date = now + chrono::Duration::days(30);
-        let keyset = self.keys_gen.generate(kid, qid, maturity_date)?;
+        let keyset = self.keys_gen.generate(kid, qid, maturity_date).await?;
 
         let signatures = selected_blinds
             .iter()
