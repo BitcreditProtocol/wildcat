@@ -1,9 +1,9 @@
 // ----- standard library imports
 // ----- extra library imports
 use anyhow::{Error as AnyError, Result as AnyResult};
+use async_trait::async_trait;
 use bitcoin::bip32 as btc32;
 use bitcoin::hashes::sha256::Hash as Sha256;
-use async_trait::async_trait;
 use bitcoin::hashes::Hash;
 use cdk::nuts::nut00 as cdk00;
 use cdk::nuts::nut01 as cdk01;

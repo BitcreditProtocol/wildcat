@@ -17,9 +17,7 @@ async fn main() {
         .try_deserialize()
         .expect("Failed to parse wildcat config");
 
-    env_logger::builder()
-        .filter_level(maincfg.log_level)
-        .init();
+    env_logger::builder().filter_level(maincfg.log_level).init();
 
     // we keep seed separate from the app config
     let seed = [0u8; 32];

@@ -33,7 +33,6 @@ pub struct AppConfig {
     dbs: persistence::surreal::DBConfig,
 }
 
-
 #[derive(Clone, FromRef)]
 pub struct AppController {
     quote: ProdQuotingService,

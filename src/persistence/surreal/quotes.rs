@@ -120,15 +120,12 @@ pub struct DB {
 }
 
 impl DB {
-
     pub async fn new(cfg: ConnectionConfig) -> SurrealResult<Self> {
         let db_connection = Surreal::<Any>::init();
         db_connection.connect(cfg.connection).await?;
         db_connection.use_ns(cfg.namespace).await?;
         db_connection.use_db(cfg.database).await?;
-        Ok(Self {
-            db: db_connection,
-        })
+        Ok(Self { db: db_connection })
     }
 
     async fn load(&self, qid: Uuid) -> SurrealResult<Option<DBQuote>> {
@@ -182,12 +179,12 @@ impl quotes::Repository for DB {
             return Err(anyhow!("cannot update to pending"));
         }
         let recordid = surrealdb::RecordId::from_table_key("quotes", new.id);
-        self
-            .db
+        self.db
             .query("UPDATE $rid CONTENT $new WHERE status == $status")
             .bind(("rid", recordid))
             .bind(("new", DBQuote::from(new)))
-            .bind(("status", DBQuoteStatus::Pending)).await?;
+            .bind(("status", DBQuoteStatus::Pending))
+            .await?;
         Ok(())
     }
 

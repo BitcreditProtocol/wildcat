@@ -1,10 +1,9 @@
 // ----- standard library imports
 // ----- extra library imports
 // ----- local modules
-pub mod quotes;
 pub mod keysets;
+pub mod quotes;
 // ----- local imports
-
 
 #[derive(Debug, Clone, Default, serde::Deserialize)]
 pub struct ConnectionConfig {
